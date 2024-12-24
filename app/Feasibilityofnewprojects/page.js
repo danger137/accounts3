@@ -46,8 +46,8 @@ return <div>
             <div className="col mb-3 d-flex align-items-center gap-3 justify-content-center flex-column flex-md-row mt-4"> {/* Add mt-4 here */}
             <i className="fa-solid fa-message"></i>
             <div>
-                <ul className="list-unstyled pt-2 mb-0 text-center">
-                    <li style={{ color: "white" }}>T: 703-953-6184</li>
+            <ul className="list-unstyled pt-2 mb-0 text-center">
+                    <li style={{ color: "white" }}>T:+1(571)682-9050</li>
                     <li style={{ color: "white" }}>
                     <a href="https://mail.google.com/mail/?view=cm&fs=1&to=Ahashmi@live.com" target="_blank" className="text-reset text-white">Ahashmi@live.com</a>
 
@@ -59,10 +59,10 @@ return <div>
                         <i style={{cursor:"pointer"}} onClick={openFacebook} className="fa-brands fa-facebook-f mt-2"></i>
                     
                       
-                                            
-                        <a href="https://wa.me/17039536184" target="_blank" rel="noopener noreferrer">
-    <i className="fa-brands fa-whatsapp mt-2 " style={{ color: 'white' }}></i>
+                        <a href="https://wa.me/15716829050" target="_blank" rel="noopener noreferrer">
+    <i className="fa-brands fa-whatsapp mt-2" style={{ color: 'white' }}></i>
 </a>
+
 
                   
 <a href="https://mail.google.com/mail/?view=cm&fs=1&to=Ahashmi@live.com" target="_blank" rel="noopener noreferrer">

@@ -9,7 +9,7 @@ export default function Blog() {
     const fetchPosts = async () => {
       const res = await fetch('/api/post');
       const data = await res.json();
-      setPosts(data);
+      setPosts(data.users);
     };
     fetchPosts();
   }, []);

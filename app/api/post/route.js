@@ -1,48 +1,133 @@
-import { v4 as uuidv4 } from 'uuid';
+import { NextResponse } from "next/server";
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { Readable } from "stream";
 
-let posts = []; // In-memory data store
+// Configure AWS S3
+const s3Client = new S3Client({
+  region: "eu-north-1",
+  credentials: {
+    accessKeyId: "AKIA34AMDB5YY6SDUNAW", // Use environment variable
+    secretAccessKey: "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", // Use environment variable
+  },
+});
 
-// Handle GET requests to retrieve posts
-export async function GET() {
-  return new Response(JSON.stringify(posts), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+// Define S3 bucket and file key
+const BUCKET_NAME = "myadminbucket927"; // Your bucket name
+const FILE_KEY = "uploads/posts.json"; // The S3 key for the JSON file
+
+// Helper function to get data from S3
+async function getDataFromS3() {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: FILE_KEY,
+    });
+    const response = await s3Client.send(command);
+
+    if (!response.Body) {
+      console.log("File found but no content.");
+      return [];
+    }
+
+    const stream = response.Body;
+    const data = await streamToString(stream);
+
+    console.log("Data retrieved from S3:", data);
+
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error("Failed to read data from S3:", error);
+    return [];
+  }
 }
 
-// Handle POST requests to create a new post
-export async function POST(req) {
-  const { title, content } = await req.json();
-
-  if (!title || !content) {
-    return new Response('Missing fields', { status: 400 });
+// Helper function to convert a stream to a string
+async function streamToString(stream) {
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(chunk);
   }
+  return Buffer.concat(chunks).toString("utf-8");
+}
 
-  const newPost = {
-    id: uuidv4(),
-    title,
-    content,
-    date: new Date().toISOString(),
+// Helper function to save data to S3
+async function saveDataToS3(data) {
+  const params = {
+    Bucket: BUCKET_NAME,
+    Key: FILE_KEY,
+    Body: JSON.stringify(data, null, 2),
+    ContentType: "application/json",
   };
-
-  posts.push(newPost); // Add the new post to the in-memory array
-
-  return new Response(JSON.stringify(newPost), {
-    status: 201,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  await s3Client.send(new PutObjectCommand(params));
 }
 
-// Handle DELETE requests to delete a post by ID
-export async function DELETE(req) {
-  const { id } = await req.json();
+export async function GET(req) {
+  try {
+    // Read data from S3
+    const users = await getDataFromS3();
 
-  const index = posts.findIndex((post) => post.id === id);
-  if (index === -1) {
-    return new Response('Post not found', { status: 404 });
+    if (users.length === 0) {
+      console.log("No data found in S3.");
+    }
+
+    return NextResponse.json({
+      success: true,
+      users: users,
+    });
+  } catch (error) {
+    console.error("Failed to read JSON data:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to read data" },
+      { status: 500 }
+    );
   }
+}
 
-  posts.splice(index, 1); // Remove the post from the array
+export async function POST(req) {
+  try {
+    const data = await req.formData();
+    const file = data.get("picture");
 
-  return new Response('Post deleted', { status: 204 });
+    if (!file) {
+      return NextResponse.json({ success: false, error: "No file uploaded" }, { status: 400 });
+    }
+
+    // Convert the uploaded file to a buffer
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Set up the S3 upload parameters for the picture
+    const pictureParams = {
+      Bucket: BUCKET_NAME,
+      Key: file.name,
+      Body: buffer,
+      ContentType: file.type,
+    };
+
+    // Upload the picture to S3
+    await s3Client.send(new PutObjectCommand(pictureParams));
+
+    // Create the new ad data
+    const newAd = {
+      title: data.get("title"),
+      content: data.get("content"),
+      date: data.get("date"),
+      price: data.get("price"),
+      owner: data.get("owner"),
+      picture: `https://${BUCKET_NAME}.s3.amazonaws.com/${file.name}`,
+    };
+
+    // Read the current data from S3
+    let currentData = await getDataFromS3();
+
+    // Append the new ad data to the current data
+    currentData.push(newAd);
+
+    // Save the updated data back to S3
+    await saveDataToS3(currentData);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Failed to handle POST request:", error);
+    return NextResponse.json({ success: false, error: "Failed to create ad" }, { status: 500 });
+  }
 }

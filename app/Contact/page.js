@@ -68,7 +68,7 @@ return <div>
             <i className="fa-solid fa-message"></i>
             <div>
                 <ul className="list-unstyled pt-2 mb-0 text-center">
-                    <li style={{ color: "white" }}>T: 703-953-6184</li>
+                    <li style={{ color: "white" }}>T: +1 (571) 682-9050</li>
                     <li style={{ color: "white" }}>
                     <a href="https://mail.google.com/mail/?view=cm&fs=1&to=Ahashmi@live.com" target="_blank" className="text-reset text-white">Ahashmi@live.com</a>
 
@@ -188,7 +188,7 @@ If you have any unanswered questions, please let us know.
 </a>
 
       <p className="h5 text-center text-lg-start" style={{lineHeight: "30px", fontWeight: "300", width: "90vw", maxWidth: "50vw"}}>
-      Phone: 703-953-6184
+      Phone: +1 (571) 682-9050
       </p>
       
     </div>
